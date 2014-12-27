@@ -39,3 +39,4 @@ gem 'spring',        group: :development
 gem 'debugger', group: [:development, :test]
 gem 'haml-rails'
 
+gem 'react-rails', '~> 1.0.0.pre', github: 'reactjs/react-rails'

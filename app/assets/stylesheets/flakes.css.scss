@@ -1,0 +1,57 @@
+#editor_vert,
+#editor_frag,
+#editor_js { 
+  position: absolute;
+  z-index: 2;
+  opacity: 0.8;
+  overflow: hidden;
+}
+
+#editor_js { 
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+}
+
+#editor_vert { 
+  right: 0;
+  top: 10%;
+  width: 40%;
+  height: 40%;
+}
+
+#editor_frag { 
+  right: 0;
+  top: 52%;
+  width: 40%;
+  height: 40%;
+}
+
+#logs {
+  position: absolute;
+  padding: 20px;
+  height: 300px;
+  top: 0;
+  right: 0;
+  opacity: 0.8;
+  /* background-color: #002B36; */
+  color: #93A1A1;
+  z-index: 1;
+}
+
+#editor_vert .ace_scrollbar, 
+#editor_frag .ace_scrollbar, 
+#editor_js .ace_scrollbar {
+  display: none !important;
+}
+
+iframe {
+  position: absolute;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border: none;
+}
