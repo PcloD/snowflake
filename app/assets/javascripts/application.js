@@ -16,7 +16,7 @@
 //= require turbolinks
 //= require react
 //= require react_ujs
-//= require material_ui
 //= require components
 //= require ace/src-min-noconflict/ace
+//= require cursors
 //= require app

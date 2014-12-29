@@ -1,33 +1,23 @@
 /** @jsx React.DOM */
 
-// var component = require('omniscient'),
-    // immstruct = require('immstruct');
-
 var appState = {};
 
 window.SnowflakeApp = React.createClass({
 
-  // componentDidMount: function() {
-  //   var webglFrame = this.refs.webglFrame;
-  //   var that = this;
-  //   webglFrame.onload = this.initWebGL.bind(this);
-  // },
+  mixins: [Cursors],
+  getInitialState: function() {
+    return {
+      flake_id: "",
+      code: {
+        vertexShader: "",
+        fragmentShader: "",
+        javascript: ""
+      }
+    }
+  },
+
   initWebGL: function() {
     this.loadCode("triangles");
-  },
-  onChangeVert: function(code) {
-   this.refs.webglFrame.setVertShader(code);
-   this.refs.webglFrame.runGLCode();
-  },
-
-  onChangeFrag: function(code) {
-   this.refs.webglFrame.setFragShader(code);
-   this.refs.webglFrame.runGLCode();
-  },
-
-  onChangeJS: function(code) {
-   this.refs.webglFrame.setJS(code);
-   this.refs.webglFrame.runGLCode();
   },
 
   loadCode: function(name) {
@@ -37,18 +27,15 @@ window.SnowflakeApp = React.createClass({
     var that = this;
 
     $.get(jsDir+"/"+name+".js", function(code) {
-      that.onChangeJS(code);
-      that.refs.jsEditor.setContent(code);
+      that.update({code: {javascript: {$set: code}}});
     }, "text");
 
     $.get(shaderDir+"/"+name+".vert", function(code) {
-      that.refs.vertEditor.setContent(code);
-      that.onChangeVert(code);
+      that.update({code: {vertexShader: {$set: code}}});
     }, "text");
 
     $.get(shaderDir+"/"+name+".frag", function(code) {
-      that.onChangeFrag(code);
-      that.refs.fragEditor.setContent(code);
+      that.update({code: {fragmentShader: {$set: code}}});
     }, "text");
 
   },
@@ -57,30 +44,35 @@ window.SnowflakeApp = React.createClass({
       <div id="app">
         <Editor
           id="editor_vert"
-          updateCallback={this.onChangeVert}
           ref="vertEditor"
+          cursors={{content: this.getCursor('code', 'vertexShader')}}
           mode="glsl">
         </Editor>
         <Editor
           id="editor_frag"
-          updateCallback={this.onChangeFrag}
           ref="fragEditor"
+          cursors={{content: this.getCursor('code', 'fragmentShader')}}
           mode="glsl">
         </Editor>
         <Editor
           id="editor_js"
-          updateCallback={this.onChangeJS}
           ref="jsEditor"
+          cursors={{content: this.getCursor('code', 'javascript')}}
           mode="javascript">
         </Editor>
         <div id="logs"> </div>
-        <WebGLFrame ref="webglFrame" onload={this.initWebGL}></WebGLFrame>
+        <WebGLFrame
+          ref="webglFrame"
+          cursors={{code: this.getCursor('code')}}
+          onload={this.initWebGL}>
+        </WebGLFrame>
       </div>
     )
   }
 });
 
 var WebGLFrame = React.createClass({
+  mixins: [Cursors],
   componentDidMount: function() {
 
     var iframe = this.getDOMNode();
@@ -92,33 +84,14 @@ var WebGLFrame = React.createClass({
       that.props.onload();
     };
   },
-  setFragShader: function(code) {
-    if(this.webGLContext) {
-      this.webGLContext.setShader({fragment: code})
-    }
-    else {
-      console.log("webGLContext not present")
-    }
+  componentDidUpdate: function() {
+    this.webGLContext.setShader({vertex: this.state.code.vertexShader})
+    this.webGLContext.setShader({fragment: this.state.code.fragmentShader})
+    this.runGLCode();
   },
-  setVertShader: function(code) {
-    if(this.webGLContext) {
-      this.webGLContext.setShader({vertex: code})
-    }
-    else {
-      console.log("webGLContext not present")
-    }
-  },
-  setJS: function(code) {
-    if(this.webGLContext) {
-      appState.activeCode = code;
-    }
-    else {
-      console.log("webGLContext not present");
-    }
-  },
-
   runGLCode: function() {
-    code = appState.activeCode;
+    code = this.state.code.javascript;
+
     if(!code) {
       console.log("no active code found!");
       return
@@ -141,10 +114,10 @@ var WebGLFrame = React.createClass({
 
 var Editor = React.createClass({
 
+  mixins: [Cursors],
   componentDidMount: function() {
     this.ace = this.initAceEditor();
   },
-
   initAceEditor: function() {
 
     var mode = this.props.mode;
@@ -160,21 +133,22 @@ var Editor = React.createClass({
       name: 'update',
       bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
       exec: function(editor) {
-        that.props.updateCallback(editor.getValue());
+        that.update({content: {$set: editor.getValue()}});
       }
     });
 
     editor.clearSelection();
+    editor.setValue(this.state.content);
     return editor;
   },
-
-  setContent: function(content) {
-    this.ace.setValue(content);
+  componentDidUpdate: function() {
+    this.ace.setValue(this.state.content);
   },
-
   render: function() {
+    if(this.isMounted()) {
+    }
     return(
       <div id={this.props.id}> </div>
     )
   }
-})
+});

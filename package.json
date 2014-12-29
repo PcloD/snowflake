@@ -1,7 +1,7 @@
 {
   "name": "snowflake",
   "dependencies": {
-    "omniscient": "~> 2.1.0",
+    "cursors": "git://github.com/caseywebdev/cursors.git#0.5.0",
     "immstruct": "~> 1.2.0"
   },
   "devDependencies" : {
