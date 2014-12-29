@@ -1,3 +1,4 @@
+//= require underscore
 var webGL = {
   run: function() {
     this.clear();
@@ -20,13 +21,16 @@ var webGL = {
     vertex: null,
     fragment: null
   },
-  getShader: function(id) {
-    var shader = this.shader[id];
+  getShader: function(type) {
+    var shader = this.shader[type];
     if(shader) {
       return shader;
     } else {
-      throw new Error("No shader found with id='"+id+"'");
+      throw new Error("No shader found with id='"+type+"'");
     }
+  },
+  setShader: function(args) {
+    _.extend(this.shader, args);
   }
 };
 console.log("LOADING WEBGL FRAME");

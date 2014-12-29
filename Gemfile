@@ -7,6 +7,7 @@ gem 'rails', '4.1.4'
 gem 'sqlite3'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 4.0.3'
+gem 'less-rails'
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
 # Use CoffeeScript for .js.coffee assets and views
@@ -40,3 +41,6 @@ gem 'debugger', group: [:development, :test]
 gem 'haml-rails'
 
 gem 'react-rails', '~> 1.0.0.pre', github: 'reactjs/react-rails'
+gem 'therubyracer'
+gem 'underscore-rails'
+gem "browserify-rails", "~> 0.5"
