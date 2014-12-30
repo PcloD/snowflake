@@ -1,6 +1,9 @@
 /** @jsx React.DOM */
 
-var appState = {};
+var mui          = require('material-ui'),
+    Toolbar      = mui.Toolbar,
+    ToolbarGroup = mui.ToolbarGroup,
+    DropDownMenu = mui.DropDownMenu;
 
 window.SnowflakeApp = React.createClass({
 
@@ -39,33 +42,52 @@ window.SnowflakeApp = React.createClass({
     }, "text");
 
   },
+  menuItems: [
+    {payload: "1", text: "Foo"},
+    {payload: "2", text: "Hello"},
+    {payload: "3", text: "World"},
+    {payload: "4", text: "Bar"}
+  ],
   render: function() {
     return (
       <div id="app">
-        <Editor
-          id="editor_vert"
-          ref="vertEditor"
-          cursors={{content: this.getCursor('code', 'vertexShader')}}
-          mode="glsl">
-        </Editor>
-        <Editor
-          id="editor_frag"
-          ref="fragEditor"
-          cursors={{content: this.getCursor('code', 'fragmentShader')}}
-          mode="glsl">
-        </Editor>
-        <Editor
-          id="editor_js"
-          ref="jsEditor"
-          cursors={{content: this.getCursor('code', 'javascript')}}
-          mode="javascript">
-        </Editor>
-        <div id="logs"> </div>
-        <WebGLFrame
-          ref="webglFrame"
-          cursors={{code: this.getCursor('code')}}
-          onload={this.initWebGL}>
-        </WebGLFrame>
+        <div id="head">
+          <Toolbar>
+            <ToolbarGroup float="left">
+              <DropDownMenu menuItems={this.menuItems}></DropDownMenu>
+            </ToolbarGroup>
+          </Toolbar>
+        </div>
+        <div id="content">
+        <div className="wrapper">
+          <Editor
+            id="editor_vert"
+            ref="vertEditor"
+            cursors={{content: this.getCursor('code', 'vertexShader')}}
+            mode="glsl">
+          </Editor>
+          <Editor
+            id="editor_frag"
+            ref="fragEditor"
+            cursors={{content: this.getCursor('code', 'fragmentShader')}}
+            mode="glsl">
+          </Editor>
+          <Editor
+            id="editor_js"
+            ref="jsEditor"
+            cursors={{content: this.getCursor('code', 'javascript')}}
+            mode="javascript">
+          </Editor>
+          <div id="logs"> </div>
+
+          <WebGLFrame
+            ref="webglFrame"
+            cursors={{code: this.getCursor('code')}}
+            onload={this.initWebGL}>
+
+          </WebGLFrame>
+        </div>
+        </div>
       </div>
     )
   }
@@ -138,11 +160,11 @@ var Editor = React.createClass({
     });
 
     editor.clearSelection();
-    editor.setValue(this.state.content);
+    editor.setValue(this.state.content, -1);
     return editor;
   },
   componentDidUpdate: function() {
-    this.ace.setValue(this.state.content);
+    this.ace.setValue(this.state.content, -1);
   },
   render: function() {
     if(this.isMounted()) {

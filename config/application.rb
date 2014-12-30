@@ -19,7 +19,7 @@ module Snowflake
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
-    config.browserify_rails.commandline_options = "-t reactify --extension=\".js.jsx\""
+    config.browserify_rails.commandline_options = "-x react -x react/external -t reactify --extension=\".jsx\" --fast -g browserify-shim"
     config.react.addons = true
   end
 end

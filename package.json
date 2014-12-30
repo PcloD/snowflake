@@ -1,15 +1,19 @@
 {
   "name": "snowflake",
   "dependencies": {
-    "cursors": "git://github.com/caseywebdev/cursors.git#0.5.0",
-    "immstruct": "~> 1.2.0"
+    "material-ui": "~> 0.4.1"
   },
-  "devDependencies" : {
+  "devDependencies": {
     "browserify": "~> 6.3",
     "reactify": "~> 0.17.1"
   },
   "license": "MIT",
   "engines": {
     "node": ">= 0.10"
+  },
+  "browserify-shim": {
+    "react/addons": "global:React",
+    "react": "global:React"
   }
+  
 }
