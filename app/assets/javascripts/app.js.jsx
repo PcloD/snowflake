@@ -1,95 +1,148 @@
 /** @jsx React.DOM */
 
 var mui          = require('material-ui'),
-    Toolbar      = mui.Toolbar,
     ToolbarGroup = mui.ToolbarGroup,
     DropDownMenu = mui.DropDownMenu;
 
 window.SnowflakeApp = React.createClass({
 
   mixins: [Cursors],
+
   getInitialState: function() {
+    this.getFlakesIndex();
     return {
-      flake_id: "",
+      flakeId: null,
       code: {
         vertexShader: "",
         fragmentShader: "",
         javascript: ""
-      }
+      },
+      currentFocus: "top left",
+      flakes: []
     }
-  },
 
+  },
   initWebGL: function() {
-    this.loadCode("triangles");
+    this.getFlakesIndex();
   },
-
-  loadCode: function(name) {
-    var shaderDir = "shaders";
-    var jsDir = "js";
-    console.log("loading "+name);
+  getFlakesIndex: function() {
+    var url = "/flakes.json"
     var that = this;
-
-    $.get(jsDir+"/"+name+".js", function(code) {
-      that.update({code: {javascript: {$set: code}}});
-    }, "text");
-
-    $.get(shaderDir+"/"+name+".vert", function(code) {
-      that.update({code: {vertexShader: {$set: code}}});
-    }, "text");
-
-    $.get(shaderDir+"/"+name+".frag", function(code) {
-      that.update({code: {fragmentShader: {$set: code}}});
-    }, "text");
-
+    $.get(url, function(data) {
+      that.update({flakes: {$set: data}});
+    });
   },
-  menuItems: [
-    {payload: "1", text: "Foo"},
-    {payload: "2", text: "Hello"},
-    {payload: "3", text: "World"},
-    {payload: "4", text: "Bar"}
-  ],
   render: function() {
     return (
       <div id="app">
         <div id="head">
-          <Toolbar>
-            <ToolbarGroup float="left">
-              <DropDownMenu menuItems={this.menuItems}></DropDownMenu>
-            </ToolbarGroup>
+          <Toolbar cursors={{code: this.getCursor('code'), flakes: this.getCursor('flakes')}}>
           </Toolbar>
         </div>
         <div id="content">
-        <div className="wrapper">
-          <Editor
-            id="editor_vert"
-            ref="vertEditor"
-            cursors={{content: this.getCursor('code', 'vertexShader')}}
-            mode="glsl">
-          </Editor>
-          <Editor
-            id="editor_frag"
-            ref="fragEditor"
-            cursors={{content: this.getCursor('code', 'fragmentShader')}}
-            mode="glsl">
-          </Editor>
-          <Editor
-            id="editor_js"
-            ref="jsEditor"
-            cursors={{content: this.getCursor('code', 'javascript')}}
-            mode="javascript">
-          </Editor>
-          <div id="logs"> </div>
+          <div className="wrapper">
+            <Editor
+              id="editor_vert"
+              position="top left"
+              key="vertex_shader"
+              cursors={{
+                content: this.getCursor('code', 'vertexShader'),
+                flakeId: this.getCursor("flakeId"),
+                currentFocus: this.getCursor("currentFocus")
+              }}
+              mode="glsl">
+            </Editor>
+            <Editor
+              id="editor_frag"
+              position="bottom left"
+              key="fragment_shader"
+              cursors={{
+                content: this.getCursor('code', 'fragmentShader'),
+                flakeId: this.getCursor("flakeId"),
+                currentFocus: this.getCursor("currentFocus")
+              }}
+              mode="glsl">
+            </Editor>
+            <Editor
+              position="top right"
+              id="editor_js"
+              key="javascript"
+              cursors={{
+                content: this.getCursor('code', 'javascript'),
+                flakeId: this.getCursor("flakeId"),
+                currentFocus: this.getCursor("currentFocus")
+              }}
+              mode="javascript">
+            </Editor>
+            <div id="logs"> </div>
 
-          <WebGLFrame
-            ref="webglFrame"
-            cursors={{code: this.getCursor('code')}}
-            onload={this.initWebGL}>
+            <WebGLFrame
+              ref="webglFrame"
+              cursors={{code: this.getCursor('code')}}
+              onload={this.initWebGL}>
 
-          </WebGLFrame>
-        </div>
+            </WebGLFrame>
+          </div>
         </div>
       </div>
     )
+  }
+});
+
+var Toolbar = React.createClass({
+  mixins: [Cursors],
+  menuItems: function() {
+
+    if(_.isEmpty(this.state.flakes)) {
+      return;
+    }
+    var items = this.state.flakes.map(function(flake) {
+      return {id: flake.id, text: flake.name};
+    });
+    return items;
+  },
+  onChange: function(e, selectedIndex, menuItem) {
+    this.getFlake(menuItem.id);
+  },
+  getFlake: function(id) {
+    var url = "/flakes/"+id+".json"
+    var that = this;
+    $.get(url, function(data) {
+      that.loadFlake(data);
+    });
+  },
+  loadFlake: function(data) {
+    this.update({
+      code: {
+        javascript: {$set: data.javascript.code},
+        fragmentShader: {$set: data.fragment_shader.code},
+        vertexShader: {$set: data.vertex_shader.code}
+      },
+      flakeId: {$set: data.id}
+    });
+  },
+  createNew: function() {
+    var url = "/flakes/"+id+".json"
+    var that = this;
+    $.get(url, function(data) {
+      that.loadFlake(data);
+    });
+  },
+  render: function() {
+    if(this.menuItems())
+      return(<mui.Toolbar>
+        <ToolbarGroup float="left">
+          <DropDownMenu menuItems={this.menuItems()} onChange={this.onChange}/>
+        </ToolbarGroup>
+        <FlatButton
+          label="New"
+          secondary={true}
+          onClick={this.createNew}
+        />
+      </mui.Toolbar>
+      )
+    else
+      return <div></div>
   }
 });
 
@@ -129,6 +182,7 @@ var WebGLFrame = React.createClass({
   render: function() {
     return(
       <iframe id="webglwindow" src="webgl_frame.html"></iframe>
+      // <div id="webglwindow"></div>
     );
   }
 
@@ -155,7 +209,39 @@ var Editor = React.createClass({
       name: 'update',
       bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
       exec: function(editor) {
-        that.update({content: {$set: editor.getValue()}});
+        that.onSave(editor.getValue());
+      }
+    });
+
+    editor.commands.addCommand({
+      name: 'focusDown',
+      bindKey: {win: 'Ctrl-J',  mac: 'Command-J'},
+      exec: function(editor) {
+        that.switchFocus("down");
+      }
+    });
+
+    editor.commands.addCommand({
+      name: 'focusUp',
+      bindKey: {win: 'Ctrl-K',  mac: 'Command-K'},
+      exec: function(editor) {
+        that.switchFocus("up");
+      }
+    });
+
+    editor.commands.addCommand({
+      name: 'focusLeft',
+      bindKey: {win: 'Ctrl-H',  mac: 'Command-H'},
+      exec: function(editor) {
+        that.switchFocus("left");
+      }
+    });
+
+    editor.commands.addCommand({
+      name: 'focusRight',
+      bindKey: {win: 'Ctrl-L',  mac: 'Command-L'},
+      exec: function(editor) {
+        that.switchFocus("right");
       }
     });
 
@@ -163,8 +249,49 @@ var Editor = React.createClass({
     editor.setValue(this.state.content, -1);
     return editor;
   },
-  componentDidUpdate: function() {
-    this.ace.setValue(this.state.content, -1);
+  switchFocus: function(direction) {
+    var toggleMap = {
+      "bottom": "top",
+      "top": "bottom",
+      "left": "right",
+      "right": "left"
+    };
+    var currentFocus = this.state.currentFocus;
+    var positions = currentFocus.split(" ");
+    var currentVert, newVert, currentHor, newHor;
+    currentVert = newVert = positions[0];
+    currentHor = newHor = positions[1];
+
+    if(_.contains(["up", "down"], direction)){
+      newVert = toggleMap[currentVert];
+    }
+
+    if(_.contains(["left", "right"], direction)) {
+      newHor = toggleMap[currentHor];
+    }
+    var newFocus = [newVert, newHor].join(" ");
+    console.log("change focus from "+currentFocus+" to "+newFocus);
+    this.update({currentFocus: {$set: newFocus}});
+  },
+  onSave: function(content) {
+    this.update({content: {$set: content}});
+    this.saveToServer(content);
+  },
+  saveToServer: function(content) {
+    var url = "flakes.json";
+    var key = this.props.key;
+    var data = {id: this.props.flakeId, _method: "put"};
+    data[key] = content;
+
+    $.post(url, {data: data});
+  },
+  componentDidUpdate: function(prevProps, prevState) {
+    if(this.props.position == this.state.currentFocus) {
+      this.ace.focus();
+    }
+    if(this.state.content !== prevState.content) {
+      this.ace.setValue(this.state.content, -1);
+    }
   },
   render: function() {
     if(this.isMounted()) {

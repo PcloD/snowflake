@@ -11,12 +11,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141227140829) do
+ActiveRecord::Schema.define(version: 20141230204407) do
 
   create_table "codes", force: true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.text     "text"
+    t.text     "code"
     t.string   "language"
   end
 
@@ -26,6 +26,7 @@ ActiveRecord::Schema.define(version: 20141227140829) do
     t.integer  "vertex_shader_id"
     t.integer  "fragment_shader_id"
     t.integer  "javascript_id"
+    t.string   "name"
   end
 
 end
