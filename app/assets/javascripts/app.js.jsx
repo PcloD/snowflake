@@ -3,6 +3,7 @@
 var mui          = require('material-ui'),
     ToolbarGroup = mui.ToolbarGroup,
     DropDownMenu = mui.DropDownMenu;
+    FlatButton   = mui.FlatButton;
 
 window.SnowflakeApp = React.createClass({
 
@@ -134,11 +135,13 @@ var Toolbar = React.createClass({
         <ToolbarGroup float="left">
           <DropDownMenu menuItems={this.menuItems()} onChange={this.onChange}/>
         </ToolbarGroup>
+        <ToolbarGroup float="right">
         <FlatButton
           label="New"
           secondary={true}
           onClick={this.createNew}
         />
+        </ToolbarGroup>
       </mui.Toolbar>
       )
     else
